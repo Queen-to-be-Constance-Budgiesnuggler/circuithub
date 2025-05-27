@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CircuitJS1 Navigation Hub</title>
+  <meta name="description" content="Interactive hub for CircuitJS1 demos and JS API examples" />
+  <meta name="theme-color" content="#22d3ee" />
+  <meta property="og:title" content="CircuitJS1 Demo Hub" />
+  <meta property="og:description" content="Launch and explore CircuitJS1 circuit simulations." />
+  <meta property="og:image" content="icon512.png" />
+  <link rel="apple-touch-icon" href="icon512.png" sizes="512x512" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#22d3ee',
+              secondary: '#a78bfa',
+              glass: 'rgba(34,211,238,0.12)',
+              glassDark: 'rgba(30,41,59,0.45)'
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  
+  <!-- Core Styles -->
+  <style>
+    /* Card and glass effects */
+    .glass {
+      background: var(--glass-bg, rgba(255,255,255,0.12));
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      backdrop-filter: blur(8px);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.18);
+      transition: all 0.3s cubic-bezier(.39,.575,.565,1);
+    }
+
+    .card-zoom {
+      transform-origin: center;
+      transition: transform 0.3s cubic-bezier(.39,.575,.565,1);
+    }
+
+    .card-zoomed {
+      transform: scale(1.04);
+      z-index: 5;
+    }
+
+    .card-glow {
+      box-shadow: 0 0 30px rgba(34,211,238,0.3);
+      border-color: #38bdf8;
+    }
+
+    /* Ripple animation */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      background: rgba(255,255,255,0.3);
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Parallax background */
+    .parallax-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background: linear-gradient(135deg, #f0fdff 0%, #f0f7ff 100%);
+      overflow: hidden;
+    }
+
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      mix-blend-mode: multiply;
+    }
+
+    .shape1 { background: #22d3ee; width: 50vw; height: 50vw; left: -10vw; top: -10vh; }
+    .shape2 { background: #a78bfa; width: 40vw; height: 40vw; right: -5vw; top: 20vh; }
+    .shape3 { background: #4ade80; width: 35vw; height: 35vw; left: 30vw; bottom: -10vh; }
+
+    /* Dark mode overrides */
+    html.dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    html.dark .parallax-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    html.dark .bg-shape {
+      opacity: 0.15;
+      mix-blend-mode: lighten;
+    }
+
+    html.dark .glass {
+      background: rgba(30,41,59,0.4);
+      border-color: rgba(100,116,139,0.2);
+    }
+
+    html.dark .card-glow {
+      box-shadow: 0 0 30px rgba(34,211,238,0.2);
+    }
+
+    @media (max-width: 640px) {
+      .glass { border-radius: 1rem; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <!-- Parallax Background -->
+  <div class="parallax-bg">
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="bg-shape shape3"></div>
+  </div>
+
+  <!-- Dark mode toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button id="darkToggle" class="btn btn-circle btn-ghost text-xl" aria-label="Toggle dark mode">
+      <span id="darkIcon">🌙</span>
+    </button>
+  </div>
+
+  <!-- Header -->
+  <header class="w-full flex flex-col items-center py-8 animate__animated animate__fadeInDown">
+    <img src="icon512.png" alt="CircuitJS1 Logo" class="w-20 h-20 mb-2 drop-shadow-lg" />
+    <h1 class="text-4xl font-extrabold text-primary mb-2 tracking-tight">CircuitJS1 Navigation Hub</h1>
+    <p class="text-base-content/70 text-lg mb-4">Explore, simulate, and learn with interactive circuit demos and tools.</p>
+    <div class="w-full max-w-xl">
+      <input id="search" type="search" placeholder="Search pages or demos..." 
+        class="w-full px-4 py-2 glass text-lg focus:ring-2 focus:ring-primary focus:outline-none" />
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <section id="all-pages">
+      <h2 class="text-2xl font-bold text-primary mb-6 animate__animated animate__fadeInDown">All Pages & Demos</h2>
+      <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </section>
+  </main>
+
+  <footer class="w-full text-center py-6 text-base-content/60">
+    &copy; 2025 CircuitJS1. Made with ❤️ for open hardware.
+  </footer>
+
+  <script>
+    // Static pages list
+    const staticPages = [
+      { file: 'about.html', title: 'About', desc: 'About CircuitJS1 and this project.' },
+      { file: 'blink-test.html', title: 'Blink Test', desc: 'Test page for blinking circuit.' },
+      { file: 'circuitjs.html', title: 'CircuitJS1 App', desc: 'Main CircuitJS1 simulator app.' },
+      { file: 'crystal.html', title: 'Crystal Demo', desc: 'Crystal oscillator circuit demo.' },
+      { file: 'customfunction.html', title: 'Custom Function', desc: 'Custom function circuit example.' },
+      { file: 'customlogic.html', title: 'Custom Logic', desc: 'Custom logic circuit example.' },
+      { file: 'customtransformer.html', title: 'Custom Transformer', desc: 'Custom transformer circuit example.' },
+      { file: 'diodecalc.html', title: 'Diode Calculator', desc: 'Diode/LED model calculator.' },
+      { file: 'mosfet-beta.html', title: 'MOSFET Beta', desc: 'MOSFET beta parameter worksheet.' },
+      { file: 'opampreal.html', title: 'Op-Amp Real', desc: 'Real op-amp model documentation.' },
+      { file: 'subcircuits.html', title: 'Subcircuits', desc: 'Subcircuits usage and documentation.' },
+      { file: 'jsinterface.html', title: 'JS Interface', desc: 'JavaScript interface example.' },
+      { file: 'iframe.html', title: 'Iframe Demo', desc: 'Demo for embedding with iframe.' },
+      { file: 'shortrelay.php', title: 'Short Relay', desc: 'Short relay PHP handler.' },
+      // --- Subfolder: doc/ ---
+      { file: 'doc/AudioInput.html', title: 'Audio Input', desc: 'Audio input documentation.' },
+      { file: 'doc/circuits.html', title: 'Sample Circuits', desc: 'Sample circuits documentation.' },
+      { file: 'doc/customfunction.html', title: 'Custom Function (Doc)', desc: 'Custom function documentation.' },
+      { file: 'doc/customlogic.html', title: 'Custom Logic (Doc)', desc: 'Custom logic documentation.' },
+      { file: 'doc/customtransformer.html', title: 'Custom Transformer (Doc)', desc: 'Custom transformer documentation.' },
+      { file: 'doc/DataInput.html', title: 'Data Input', desc: 'Data input documentation.' },
+      { file: 'doc/DelayBuffer.html', title: 'Delay Buffer', desc: 'Delay buffer documentation.' },
+      { file: 'doc/js-interface.html', title: 'JS Interface (Doc)', desc: 'JavaScript interface documentation.' },
+      { file: 'doc/opampreal.html', title: 'Op-Amp Real (Doc)', desc: 'Real op-amp documentation.' },
+      { file: 'doc/overview.html', title: 'Overview', desc: 'Project overview.' },
+      { file: 'doc/subcircuits.html', title: 'Subcircuits (Doc)', desc: 'Subcircuits documentation.' },
+      { file: 'doc/toc.html', title: 'Docs TOC', desc: 'Documentation table of contents.' },
+      { file: 'doc/welcome.html', title: 'Welcome', desc: 'Welcome page.' },
+      // --- Subfolder: avr8js/ ---
+      { file: 'avr8js/analog.html', title: 'AVR8js Analog', desc: 'AVR8js analog simulation.' },
+      { file: 'avr8js/index.html', title: 'AVR8js Index', desc: 'AVR8js main page.' },
+      { file: 'avr8js/logic.html', title: 'AVR8js Logic', desc: 'AVR8js logic simulation.' },
+    ];
+
+    // Initialize page
+    function startWithDemos(demos = []) {
+      const allCards = [
+        ...staticPages,
+        ...demos.map(d => ({
+          file: d.file,
+          title: d.title || d.file,
+          desc: d.desc || '',
+          tags: d.tags || [],
+          isDemo: true
+        }))
+      ].filter((v,i,a) => a.findIndex(t => t.file === v.file) === i);
+
+      function createCard(item) {
+        const card = document.createElement('div');
+        card.className = 'glass card-zoom relative group animate__animated animate__fadeInUp';
+        
+        const link = document.createElement('a');
+        link.href = `./${item.file}`;
+        link.className = 'block p-6 h-full focus:outline-none focus:ring-2 focus:ring-primary';
+        
+        link.innerHTML = `
+          <h3 class="text-lg font-semibold mb-2 ${item.isDemo ? 'text-primary' : 'text-secondary'}">${item.title}</h3>
+          <p class="text-base-content/70 text-sm mb-3">${item.desc}</p>
+          ${item.tags ? `
+            <div class="flex flex-wrap gap-1">
+              ${item.tags.map(t => `
+                <span class="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">${t}</span>
+              `).join('')}
+            </div>
+          ` : ''}
+        `;
+
+        // Add interactive effects
+        card.appendChild(link);
+        
+        function addRipple(e) {
+          const ripple = document.createElement('div');
+          ripple.className = 'ripple';
+          const rect = card.getBoundingClientRect();
+          ripple.style.left = `${e.clientX - rect.left}px`;
+          ripple.style.top = `${e.clientY - rect.top}px`;
+          card.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+        }
+
+        link.addEventListener('click', addRipple);
+        link.addEventListener('mouseenter', () => card.classList.add('card-glow', 'card-zoomed'));
+        link.addEventListener('mouseleave', () => card.classList.remove('card-glow', 'card-zoomed'));
+
+        return card;
+      }
+
+      function renderCards(items) {
+        const grid = document.getElementById('cards-grid');
+        grid.innerHTML = '';
+        items.forEach(item => grid.appendChild(createCard(item)));
+      }
+
+      // Search functionality
+      const searchInput = document.getElementById('search');
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        const filtered = !query ? allCards : allCards.filter(item => 
+          item.title.toLowerCase().includes(query) || 
+          item.desc.toLowerCase().includes(query) ||
+          item.tags?.some(t => t.toLowerCase().includes(query))
+        );
+        renderCards(filtered);
+      });
+
+      // Dark mode
+      const darkToggle = document.getElementById('darkToggle');
+      const darkIcon = document.getElementById('darkIcon');
+      
+      function setDarkMode(on) {
+        document.documentElement.classList.toggle('dark', on);
+        localStorage.setItem('theme', on ? 'dark' : 'light');
+        darkIcon.textContent = on ? '☀️' : '🌙';
+      }
+
+      // Initial dark mode
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+      setDarkMode(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+      // Dark mode toggle
+      darkToggle.addEventListener('click', () => {
+        setDarkMode(!document.documentElement.classList.contains('dark'));
+      });
+
+      // System dark mode changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) setDarkMode(e.matches);
+      });
+
+      // Parallax effect
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY;
+        document.querySelector('.shape1').style.transform = `translateY(${scrolled * 0.2}px)`;
+        document.querySelector('.shape2').style.transform = `translateY(${scrolled * 0.1}px)`;
+        document.querySelector('.shape3').style.transform = `translateY(${scrolled * 0.15}px)`;
+      });
+
+      // Initial render
+      renderCards(allCards);
+    }
+
+    // Load demos
+    fetch('./demos.json')
+      .then(r => r.json())
+      .then(startWithDemos)
+      .catch(() => startWithDemos([]));
+  </script>
+</body>
+</html>
