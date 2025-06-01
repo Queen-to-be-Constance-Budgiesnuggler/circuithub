@@ -15,7 +15,7 @@ body {
   margin: 10px;
   border: 0px;
   padding: 0px;
-  background: #191919;
+  background: #51ffd4;
   direction: ltr;
 }
 a, a:visited {
@@ -24,12 +24,12 @@ a, a:visited {
 }
 
 a:hover {
-  color: #0066cc;
+  color: #00adcc;
   text-decoration:underline;
 }
 
 select {
-  background: white;
+  background: rgb(233, 218, 203);
 }
 
 /**
@@ -202,7 +202,7 @@ select {
   cursor: hand;
 }
 .gwt-DisclosurePanel .content {
-  border-left: 3px solid #e7e7e7;
+  border-left: 3px solid #a06767;
   padding: 4px 0px 4px 8px;
   margin-left: 6px;
 }
@@ -246,6 +246,7 @@ select {
 }
 
 .gwt-Label {
+  background: rgb(221, 164, 137);
 }
 
 .gwt-ListBox {
@@ -259,11 +260,11 @@ select {
   font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-MenuBar .gwt-MenuItem-selected {
-  background: #E3E8F3;
+  background: #ecb6e1;
 }
 .gwt-MenuBar-horizontal {
-  background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
-  border: 1px solid #e0e0e0;
+  background: #51ffd4 url(images/hborder.png) repeat-x 0px -2003px;
+  border: 1px solid #191919;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItem {
   padding: 5px 10px;
@@ -277,17 +278,17 @@ select {
   margin: 0px;
   border: 0px;
   border-left: 1px solid #ccc;
-  background: white;
+  background: rgb(29, 129, 51);
 }
 .gwt-MenuBar-horizontal .gwt-MenuItemSeparator .menuSeparatorInner {
   width: 1px;
   height: 1px;
-  background: white;
+  background: rgb(165, 28, 158);
 }
 .gwt-MenuBar-vertical {
   margin-top: 0px;
   margin-left: 0px;
-  background: white;
+  background: rgb(238, 206, 194);
 }
 .gwt-MenuBar-vertical table {
   border-collapse: collapse;
@@ -302,14 +303,14 @@ select {
   height: 1px;
   padding: 0px;
   border: 0px;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #79350d;
   overflow: hidden;
 }
 .gwt-MenuBar-vertical .subMenuIcon {
   padding-right: 4px;
 }
 .gwt-MenuBar-vertical .subMenuIcon-selected {
-  background: #E3E8F3;
+  background: #e9aca1;
 }
 .gwt-MenuBarPopup .menuPopupTopCenter {
   background: url(images/hborder.png) 0px -12px repeat-x;
@@ -502,7 +503,7 @@ select {
   border: 0px;
 }
 .gwt-RichTextToolbar {
-  background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
+  background: #f3e3e6 url(images/hborder.png) repeat-x 0px -2003px;
   border-bottom: 1px solid #BBBBBB;
   padding: 3px;
   margin: 0px;
@@ -634,11 +635,11 @@ select {
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-first .stackItemTopRight,
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-first .stackItemTopLeft {
   border: 0px;
-  background-color: white;
+  background-color: rgb(126, 50, 50);
 }
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItemTopLeft,
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItemTopRight {
-  background-color: white;
+  background-color: rgb(133, 64, 64);
 }
 
 .gwt-SuggestBox {
