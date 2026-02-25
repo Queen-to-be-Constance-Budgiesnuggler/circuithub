@@ -1,74 +1,89 @@
-const CACHE_NAME = 'circuitjs1-app-cache-v1';
-const urlsToCache = [
-  '/circuit/about.html',
-  '/circuit/canvas2svg.js',
-  '/circuit/circuitjs.html',
-  '/circuit/crystal.html',
-  '/circuit/customfunction.html',
-  '/circuit/customlogic.html',
-  '/circuit/customtransformer.html',
-  '/circuit/diodecalc.html',
-  '/circuit/icon512.png',
-  '/circuit/icon128.png',
-  '/circuit/iframe.html',
-  '/circuit/lz-string.min.js',
-  '/circuit/manifest.json',
-  '/circuit/mexle.html',
-  '/circuit/mosfet-beta.html',
-  '/circuit/opampreal.html',
-  '/circuit/split.js',
-  '/circuit/subcircuits.html',
-  // put everything else here
-];
+/* service-worker.js */
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `circuitjs1-app-cache-${CACHE_VERSION}`;
+
+// Figures out the repo base path for GitHub Pages project sites.
+// Examples:
+// - https://user.github.io/repo/service-worker.js  -> basePath = "/repo/"
+// - https://example.com/service-worker.js          -> basePath = "/"
+const basePath = new URL(self.registration.scope).pathname; // always ends with "/"
+
+// Keep paths relative to basePath (no leading slash).
+const urlsToCache = [
+  'about.html',
+  'canvas2svg.js',
+  'circuitjs.html',
+  'crystal.html',
+  'customfunction.html',
+  'customlogic.html',
+  'customtransformer.html',
+  'diodecalc.html',
+  'icon512.png',
+  'icon128.png',
+  'iframe.html',
+  'lz-string.min.js',
+  'manifest.json',
+  // 'mexle.html', // remove unless it actually exists
+  'mosfet-beta.html',
+  'opampreal.html',
+  'split.js',
+  'subcircuits.html',
+  // add more here…
+].map(p => new URL(p, self.registration.scope).toString()); // absolute URLs scoped correctly
+
+async function safeAddAll(cache, urls) {
+  // cache.addAll() fails the whole install on a single 404.
+  // This version tries each URL and ignores failures.
+  await Promise.all(urls.map(async (url) => {
+    try {
+      // "cache: 'reload'" avoids getting a stale HTTP cache copy during install.
+      const res = await fetch(url, { cache: 'reload' });
+      if (res.ok) {
+        await cache.put(url, res);
+      } else {
+        // Non-200 (404, 500, etc.) -> skip
+        console.warn('[SW] Skip caching (bad status):', res.status, url);
+      }
+    } catch (err) {
+      console.warn('[SW] Skip caching (fetch failed):', url, err);
+    }
+  }));
+}
+
+self.addEventListener('install', (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await safeAddAll(cache, urlsToCache);
+    // Make the new SW take control sooner (optional but usually desired)
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.map((key) => (key === CACHE_NAME ? null : caches.delete(key)))
+    );
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                // If the resource is already cached, return it
-                return cachedResponse;
-            }
+  // Only deal with GET; leave POST/etc alone.
+  if (event.request.method !== 'GET') return;
 
-            // Otherwise, fetch it from the network and add it to the cache
-            return fetch(event.request).then((networkResponse) => {
-                // Only cache non-GET requests and responses that aren't errors
-                if (
-                    event.request.method === 'GET' &&
-                    networkResponse.status === 200
-                ) {
-		    const responseClone = networkResponse.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
-                }
+  event.respondWith((async () => {
+    const cached = await caches.match(event.request);
+    if (cached) return cached;
 
-                return networkResponse;
-            });
-        })
-    );
-});
-
-
-// Activate event: cleans up old caches
-self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME];  // List of cache versions you want to keep
-
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (!cacheWhitelist.includes(cacheName)) {
-                        return caches.delete(cacheName);  // Delete old caches that aren't in whitelist
-                    }
-                })
-            );
-        })
-    );
+    const response = await fetch(event.request);
+    // Cache successful same-origin-ish GET responses.
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(event.request, response.clone()).catch(() => {});
+    }
+    return response;
+  })());
 });
